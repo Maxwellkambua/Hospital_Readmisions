@@ -1,0 +1,11 @@
+<b>Kenya</b>,<b>Control compared to intervention sites at baseline</b>,Unnamed: 2,Unnamed: 3,Unnamed: 4,<b>Control compared to intervention sites during implementation</b>,Unnamed: 6,Unnamed: 7,Unnamed: 8,<b>Intervention site: Baseline compared to implementation at the intervention site</b>,Unnamed: 10
+<b></b>,<b>Intervention site</b>,<b>Control site</b>,<b>% diff</b>,<b>Effect size<sup>b</sup></b>,<b>Intervention site</b>,<b>Control</b>,<b>% diff</b>,<b>Effect size<sup>b</sup></b>,<b>% diff</b>,<b>Effect size<sup>c</sup></b>
+"Enrolled, N",2856,2520,,,3428,3177,,,,
+"Time (min) to IVA, median (IQR)",115 (68-203),239 (160-388),-52,"-125 (-168, -81)",123 (68-213),261 (193-392),-53,"-139 (-179, -99)",7,"8 (-21, 37)"
+"Admitted, n (%)",255 (9.0),119 (4.7),90,OR: 1.99 (1.59-2.49),164 (4.78),148 (4.7),3,OR: 1.03 (0.82-1.29),-47,OR: 0.51 (0.42-0.62)
+"IVA, n (%)",218 (7.6),73 (2.9),162,"OR: 2.77 (2.11, 3.63)",138 (4.03),92 (2.9),39,"OR: 1.41 (1.08, 1.84)",-47,"OR: 0.51 (0.41, 0.63)"
+"IVA in admitted cases, n (%)<sup>a</sup>",193 (88.5),69 (94.5),-6,OR: 2.26 (1.42-3.58),108 (78.3),86 (93.5),-16,OR: 1.39 (0.88-2.21),-12,OR: 0.62 (0.40-0.95)
+"Time to IVA emergency cases, median (IQR)",119 (65-185),196 (149-366),-65,"-79 (-136, -21)",101 (58-162),262 (201-381),-61,"-161 (-209, -113)",-15,"-18 (-46, 10)"
+"Time (min) to IVA priority cases, median (IQR)",108 (59-235),303 (175-480),-64,"-191 (-272, -109)",169 (68 -246),258 (179-354),-34,"-87.63 (-181, 5)",56,"62 (-2, 127)"
+"Readmitted, n (%)",20 (0.7),13 (0.5),37,OR: 2.39 (1.26-4.53),21 (0.6),27 (0.9),28,OR: 0.72 (0.41-1.28),-13,OR: 0.88 (0.47-1.62)
+"Mortality within 7 days, n (%)",29 (0.4),11 (1.0),-60,OR: 2.34 (1.17-4.67),10 (0.3),10 (0.3),-6,OR: 0.93 (0.39-2.24),-25,OR: 0.29 (0.14-0.59)

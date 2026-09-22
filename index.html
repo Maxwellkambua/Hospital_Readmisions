@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Afya Analytics · Kenya Readmission Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="brand-mark">♥</div>
+      <div class="brand-text">
+        <div class="brand-title">Afya Analytics</div>
+        <div class="brand-sub">Kenya Readmission Dashboard</div>
+      </div>
+      <button class="icon-btn" id="sidebar-toggle" title="Collapse sidebar">‹</button>
+    </div>
+
+    <nav class="sidebar__nav">
+      <div class="nav-group">
+        <div class="nav-group__label">Facility</div>
+        <label class="field">
+          <span class="field__label">Hospital</span>
+          <select id="f-campus" class="field__input"></select>
+        </label>
+        <label class="field">
+          <span class="field__label">Study Phase</span>
+          <select id="f-phase" class="field__input">
+            <option value="ALL">All Phases</option>
+            <option value="baseline">Baseline (Prior 12mo)</option>
+            <option value="implementation">Implementation (Last 12mo)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">Cohort</div>
+        <label class="field">
+          <span class="field__label">Condition</span>
+          <select id="f-condition" class="field__input"></select>
+        </label>
+        <label class="field">
+          <span class="field__label">Payer</span>
+          <select id="f-payer" class="field__input"></select>
+        </label>
+        <label class="field">
+          <span class="field__label">Disposition</span>
+          <select id="f-disposition" class="field__input"></select>
+        </label>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group__label">Patient</div>
+        <label class="field">
+          <span class="field__label">Segment</span>
+          <select id="f-segment" class="field__input">
+            <option value="ALL">All Patients</option>
+            <option value="hrrp">Priority Cohorts Only</option>
+            <option value="highrisk">High Risk (≥ 30%)</option>
+            <option value="followup">No 7-Day Follow-up</option>
+            <option value="livingalone">Lives Alone</option>
+            <option value="nochp">No CHP Assigned</option>
+            <option value="cash">Cash / Self-Pay</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Min Age · <b id="age-val">0</b></span>
+          <input type="range" id="f-age" min="0" max="95" value="0" step="1" class="field__range">
+        </label>
+      </div>
+
+      <div class="nav-group nav-group--footer">
+        <div class="cohort-stat">
+          <div class="cohort-stat__value" id="cohort-count">0</div>
+          <div class="cohort-stat__label">admissions in view</div>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__left">
+        <button class="icon-btn" id="menu-toggle" title="Toggle sidebar">☰</button>
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" id="patient-search" placeholder="Search by MRN or initials…" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="topbar__right">
+        <div class="period-toggle" id="period-toggle">
+          <button class="period-btn active" data-period="all">All Time</button>
+          <button class="period-btn" data-period="current">Last 12mo</button>
+          <button class="period-btn" data-period="prior">Prior 12mo</button>
+        </div>
+        <button class="icon-btn" id="reset-filters" title="Reset all filters">⟲</button>
+        <button class="icon-btn" id="theme-toggle" title="Toggle dark mode">🌓</button>
+        <button class="btn btn--primary" id="export-btn">↓ <span>Export CSV</span></button>
+      </div>
+    </header>
+
+    <div class="chips" id="active-chips"></div>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="exec">Overview</button>
+      <button class="tab-btn" data-tab="condition">Conditions</button>
+      <button class="tab-btn" data-tab="risk">Patients</button>
+      <button class="tab-btn" data-tab="timing">Operations</button>
+      <button class="tab-btn" data-tab="providers">Providers</button>
+      <button class="tab-btn" data-tab="target">Targeting</button>
+      <button class="tab-btn" data-tab="method">Methodology</button>
+    </nav>
+
+    <main class="content" id="content">
+
+      <section class="tab-panel active" id="panel-exec">
+        <div class="kpi-row" id="exec-kpis"></div>
+        <div class="card">
+          <div class="card__header"><div><h3>Monthly Readmission Rate</h3><p class="card__hint">Volume bars on right axis. Dashed line is the mix-weighted benchmark.</p></div></div>
+          <div id="chart-trend" class="chart chart-lg"></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="card__header"><div><h3>Rate by Condition</h3><p class="card__hint">Red bars exceed the national benchmark.</p></div></div><div id="chart-cond-rate" class="chart chart-lg"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Excess Readmission Ratio</h3><p class="card__hint">Actual ÷ Expected. Above 1.0 indicates excess readmissions after risk adjustment.</p></div></div><div id="chart-err" class="chart chart-lg"></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="card__header"><div><h3>Facility Scorecard</h3></div></div><div id="table-campus"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Readmission Cause Mix</h3></div></div><div id="chart-cause" class="chart chart-lg"></div></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-condition">
+        <div class="card card--flush">
+          <div class="card__header card__header--row">
+            <div><h3>Condition Deep Dive</h3><p class="card__hint">Select a cohort to drill into its risk profile, LOS, and disposition mix.</p></div>
+            <select id="cond-select" class="field__input field__input--lg"></select>
+          </div>
+        </div>
+        <div class="kpi-row" id="cond-kpis"></div>
+        <div class="grid-2">
+          <div class="card"><div class="card__header"><div><h3>ERR Gauge</h3><p class="card__hint">Position relative to the 1.0 benchmark threshold.</p></div></div><div id="chart-gauge" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Monthly Rate Trend</h3></div></div><div id="chart-cond-trend" class="chart chart-md"></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="card__header"><div><h3>Length of Stay Distribution</h3></div></div><div id="chart-los" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Rate by Disposition</h3></div></div><div id="chart-disp" class="chart chart-md"></div></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-risk">
+        <div class="grid-3">
+          <div class="card"><div class="card__header"><div><h3>By Comorbidity</h3></div></div><div id="chart-comorb" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>By Prior Admissions</h3></div></div><div id="chart-prior" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>By Social Risk</h3></div></div><div id="chart-social" class="chart chart-md"></div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="card__header"><div><h3>Rate by Payer</h3></div></div><div id="chart-payer" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Risk Score Distribution</h3></div></div><div id="chart-riskscore" class="chart chart-md"></div></div>
+        </div>
+        <div class="card"><div class="card__header"><div><h3>Risk Heatmap · Age × Comorbidity</h3></div></div><div id="chart-heat" class="chart chart-lg"></div></div>
+        <div class="card"><div class="card__header"><div><h3>Top 20 Highest-Risk Patients</h3></div></div><div id="table-highrisk"></div></div>
+      </section>
+
+      <section class="tab-panel" id="panel-timing">
+        <div class="card"><div class="card__header"><div><h3>Days to Readmission</h3></div></div><div id="chart-days" class="chart chart-lg"></div></div>
+        <div class="grid-3">
+          <div class="card"><div class="card__header"><div><h3>Day of Week</h3></div></div><div id="chart-dow" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Index LOS Bucket</h3></div></div><div id="chart-losbucket" class="chart chart-md"></div></div>
+          <div class="card"><div class="card__header"><div><h3>Discharge Hour</h3></div></div><div id="chart-dischour" class="chart chart-md"></div></div>
+        </div>
+        <div class="card"><div class="card__header"><div><h3>Facility × Condition Rate</h3></div></div><div id="chart-campus-heat" class="chart chart-xl"></div></div>
+      </section>
+
+      <section class="tab-panel" id="panel-providers">
+        <div class="grid-2">
+          <div class="card"><div class="card__header"><div><h3>Volume vs ERR</h3></div></div><div id="chart-prov-scatter" class="chart chart-lg"></div></div>
+          <div class="card"><div class="card__header"><div><h3>By Specialty</h3></div></div><div id="chart-specialty" class="chart chart-lg"></div></div>
+        </div>
+        <div class="card"><div class="card__header"><div><h3>Physician Leaderboard</h3><p class="card__hint">Minimum 50 admissions. Sorted by ERR.</p></div></div><div id="table-providers"></div></div>
+      </section>
+
+      <section class="tab-panel" id="panel-target">
+        <div class="card">
+          <div class="card__header"><div><h3>Intervention What-If</h3><p class="card__hint">Estimate the impact of a transitional-care and CHP outreach program.</p></div></div>
+          <div class="slider-row"><label>Patients enrolled per year: <span class="val" id="n-target-val">500</span></label><input type="range" id="n-target" min="50" max="3000" value="500" step="50"></div>
+          <div class="slider-row"><label>Relative risk reduction: <span class="val" id="rrr-val">25%</span></label><input type="range" id="rrr" min="5" max="60" value="25" step="5"></div>
+          <div class="slider-row"><label>Program cost per patient: <span class="val" id="prog-cost-val">KSh 15,000</span></label><input type="range" id="prog-cost" min="2000" max="80000" value="15000" step="1000"></div>
+        </div>
+        <div class="kpi-row" id="target-kpis"></div>
+        <div class="card"><div class="card__header"><div><h3>Projected Impact Curve</h3></div></div><div id="chart-whatif" class="chart chart-lg"></div></div>
+        <div class="card"><div class="card__header"><div><h3>Enrollment Priority List</h3></div></div><div id="table-target"></div></div>
+      </section>
+
+      <section class="tab-panel" id="panel-method">
+        <div class="card">
+          <div class="card__header"><div><h3>Metric Definitions</h3></div></div>
+          <div class="method">
+            <p><b>30-Day Readmission Rate</b> — Share of index discharges followed by an unplanned acute readmission within 30 days, all-cause, any facility in the network.</p>
+            <p><b>Expected Readmissions</b> — Sum of predicted probabilities under a national reference model given age, comorbidity burden, prior utilisation, payer, disposition, social risk, and transport access.</p>
+            <p><b>Excess Readmission Ratio (ERR)</b> — Actual ÷ Expected. Above 1.0 indicates excess readmissions after risk adjustment.</p>
+            <p><b>Charlson Comorbidity Index</b> — Weighted score predicting mortality; correlates strongly with readmission.</p>
+            <p><b>Social Risk Score</b> — 0–10 composite of housing stability, food security, transport access, and social support.</p>
+            <p><b>Community Health Promoter (CHP)</b> — Kenya's community health cadre providing household-level follow-up. CHP assignment substantially reduces readmission in this model.</p>
+            <p><b>SHA / NHIF</b> — Kenya transitioned from NHIF to the Social Health Authority (SHA) in October 2024. Both payer categories are modelled during the transition.</p>
+            <p><b>DAMA</b> — Discharged Against Medical Advice. Strong signal for readmission.</p>
+            <p><b>Study Phase</b> — <i>Baseline</i> reflects the pre-intervention period; <i>Implementation</i> reflects the period during the quality improvement programme. Sourced from Table 3 of the reference study.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header"><div><h3>Data Source & Citation</h3></div></div>
+          <div class="note">
+            <b>Primary source.</b> Admission and readmission counts in this dashboard are calibrated to <b>Table 3</b> of:
+            <br><br>
+            Ansermino JM, et al. <i>Enrolment, time to IVA, mortality, admissions and readmissions at sites in Kenya.</i>
+            <b>PLOS Digital Health</b>, 2025. DOI: 10.1371/journal.pdig.0000466
+            <br><br>
+            <b>Raw numbers used for calibration:</b>
+            <ul style="margin:8px 0 8px 20px;line-height:1.9">
+              <li>Baseline · Intervention site: <b>255 admitted · 20 readmitted</b> (7.84%)</li>
+              <li>Baseline · Control site: <b>119 admitted · 13 readmitted</b> (10.92%)</li>
+              <li>Implementation · Intervention: <b>164 admitted · 21 readmitted</b> (12.80%)</li>
+              <li>Implementation · Control: <b>148 admitted · 27 readmitted</b> (18.24%)</li>
+              <li><b>Total: 686 admissions · 81 readmissions · 11.81%</b></li>
+            </ul>
+            <b>Scaling:</b> counts are multiplied by 10× so the charts have enough granularity for interactive filtering.
+            <b>Readmission rates remain exact</b> — a filter to any phase/site combination reproduces the study percentages precisely.
+            <br><br>
+            <b>Patient-level attributes</b> (age, sex, comorbidity burden, LOS, disposition, payer mix, social risk score, individual readmission probability)
+            are synthesized to match Kenyan inpatient distributions. Readmission assignment is <b>weighted by computed risk</b>, so the top-risk table,
+            risk distributions, and heatmaps remain clinically meaningful.
+            <br><br>
+            <b>Facilities.</b> Six real Kenyan referral hospitals are modelled (KNH, MTRH, Coast General, Thika, Embu, Kisii). Three are classified as
+            intervention sites and three as control sites to match the study design.
+            <br><br>
+            <b>To connect real data</b>, replace <code>loadCohort()</code> in <code>js/data.js</code> with a fetch against your KHIS/DHIS2 API or KenyaEMR.
+            The expected row schema is documented in the README.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header"><div><h3>Additional References</h3></div></div>
+          <div class="method">
+            <p>• <b>Kenya Ministry of Health</b> — Kenya Health Sector Strategic Plan; Community Health Strategy</p>
+            <p>• <b>Thika Level 5 Hospital</b> — Paediatric readmission study (10.2% 30-day rate)</p>
+            <p>• <b>Moi Teaching & Referral Hospital</b> — Psychiatric readmission cohort (16% 30-day / 30.6% 6-month)</p>
+            <p>• <b>Kenyatta National Hospital</b> — General medical readmission pooled estimates</p>
+            <p>• <b>ESTEEM model</b> — Length-of-stay parameters for Kenyan referral hospitals</p>
+            <p>• <b>FinAccess Household Survey 2024</b> — Health insurance coverage and financial access</p>
+            <p>• <b>Social Health Authority (SHA)</b> — SHIF benefit package and transition documentation</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/components.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/tables.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
