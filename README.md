@@ -2,6 +2,9 @@
 
 An interactive, single-page analytics dashboard for hospital 30-day readmission performance, calibrated to real published Kenyan data.
 
+🔗 **Live demo:** https://hospital-readmisions.vercel.app/
+
+
 ## Data source
 
 Admission and readmission counts are calibrated to **Table 3** of:
